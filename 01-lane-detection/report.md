@@ -19,7 +19,7 @@ Each frame goes through these steps:
 5. Segments are split into left and right by the sign of their slope. Near-horizontal segments (|slope| < 0.4) are dropped.
 6. One line per side is fitted by least squares as x = a·y + b.
 
-The departure offset is (image centre − lane centre) / lane width at the bottom row, and |offset| > 0.15 triggers a warning. In video, line coefficients are smoothed with an exponential moving average (α = 0.3).
+The final pipeline uses the HLS mask and Canny (80, 200) by default, chosen from the experiments below. The departure offset is (image centre − lane centre) / lane width at the bottom row, and |offset| > 0.15 triggers a warning. In video, line coefficients are smoothed with an exponential moving average (α = 0.3).
 
 For evaluation, predicted and labeled x positions are compared on 10 rows. A point is correct if it lies within a pixel tolerance (20 or 10 px). A missed side counts all 10 of its points as wrong.
 
@@ -36,11 +36,13 @@ Two Canny threshold pairs, with the colour mask on and off, at two tolerances:
 
 The colour mask is the main improvement. It adds 5.2–6.5 points of accuracy at 20 px and 6.9–8.8 points at 10 px, and it removes every missed lane. Stricter Canny thresholds (80, 200) help a little at 10 px. Without the mask, though, they miss more lanes (95.0% both detected versus 97.5%), because faint markings no longer produce edges. Tightening the tolerance from 20 px to 10 px cuts accuracy by 15–19 points, so most of the remaining error is in the 10–20 px range.
 
+On the full videos, measured without labels as the share of frames with both sides detected, the best setting reaches 100.0% on `project_video.mp4` (baseline 99.4%). On `challenge_video.mp4` it reaches 96.1% (baseline 95.9%).
+
 ## 5. Discussion
 
 - **Curves.** The model is a straight line, so on bends the fitted line follows the near part of the lane and drifts off it further ahead. The ground truth is also a straight line, so this error is not captured by the numbers above.
-- **Shadows and surface changes.** Shadow edges and the borders of pale concrete patches are strong grayscale gradients, which Canny and Hough can mistake for lane segments. The colour mask removes most of these because they are neither white nor yellow, which is consistent with the 100% detection rate when the mask is on. Even with good overall numbers, the left line sometimes sits inside the yellow marking on pale concrete (frame 600 of the demo).
-- **Challenge video.** Tar seams that run parallel to the lane, and the base of the concrete barrier, are long, straight and high-contrast. Inside the ROI they look exactly like lane lines to Hough. In `challenge_video.mp4`, the right line often locks onto a seam instead of the dashed marking. The EMA smoothing makes the overlay stable but does not fix where it points.
+- **Shadows and surface changes.** Shadow edges and the borders of pale concrete patches are strong grayscale gradients, which Canny and Hough can mistake for lane segments. The colour mask removes most of these because they are neither white nor yellow, which is consistent with the 100% detection rate when the mask is on. With the baseline settings, the left line sat inside the yellow marking on pale concrete (demo frame 600). With the mask on, it follows the marking.
+- **Challenge video.** Tar seams that run parallel to the lane, and the base of the concrete barrier, are long, straight and high-contrast. Inside the ROI they look like lane lines to Hough. With the baseline settings, the right line locked onto a seam (challenge frame 200). The colour mask removes much of this, but a side is still missed in 19 of 484 frames (3.9%), almost the same as without the mask (20 frames). Fixed colour thresholds are not enough for faded markings. The EMA smoothing holds the previous line through misses, but it cannot correct a line that is wrong.
 
 ## 6. Conclusion & Future Work
 

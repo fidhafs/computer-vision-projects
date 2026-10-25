@@ -22,8 +22,8 @@ For evaluation, 40 evenly spaced frames of `project_video.mp4` were hand-labeled
 
 The pipeline in `src/lane.py` runs once per frame:
 
-1. **(Optional) HLS colour mask:** keep only white pixels (lightness ≥ 200) and yellow pixels (hue 15–35, saturation ≥ 80).
-2. **Grayscale → 5×5 Gaussian blur → Canny edges** with thresholds (lo, hi).
+1. **HLS colour mask** (on by default, `--no-color` to disable): keep only white pixels (lightness ≥ 200) and yellow pixels (hue 15–35, saturation ≥ 80).
+2. **Grayscale → 5×5 Gaussian blur → Canny edges** with thresholds (80, 200) by default.
 3. **Region of interest:** a trapezoid covering the road ahead, from the bottom of the image up to 62% of its height.
 4. **Probabilistic Hough transform** to find line segments.
 5. **Left/right split by slope:** drop near-horizontal segments (|slope| < 0.4). Negative slope in the left half is the left lane; positive slope in the right half is the right lane.
@@ -50,13 +50,14 @@ cd 01-lane-detection
 git clone https://github.com/udacity/CarND-Advanced-Lane-Lines.git data/CarND-Advanced-Lane-Lines
 
 # 2. run on a video -> annotated mp4 + sample frames in results/
-python src/run_video.py --src data/CarND-Advanced-Lane-Lines/project_video.mp4 --out results/demo.mp4 --color
+python src/run_video.py --src data/CarND-Advanced-Lane-Lines/project_video.mp4 --out results/demo.mp4
 
 # 3. (optional) label your own ground truth
 python src/label_frames.py
 
-# 4. evaluate (appends to results/metrics.txt)
-python src/evaluate.py --canny_lo 80 --canny_hi 200 --px 20 --color
+# 4. evaluate (appends to results/metrics.txt); defaults are Canny (80, 200) + colour mask
+python src/evaluate.py --px 20
+python src/evaluate.py --canny_lo 50 --canny_hi 150 --no-color   # baseline
 ```
 
 ## Results
@@ -70,7 +71,16 @@ Evaluated on 40 hand-labeled frames (800 points: 40 frames × 2 sides × 10 rows
 | (80, 200) | off | 95.0% | 87.6% (701/800) | 72.0% (576/800) | 8.9 px |
 | (80, 200) | on  | **100.0%** | **94.1% (753/800)** | **78.9% (631/800)** | **7.5 px** |
 
-The best setting is **Canny (80, 200) with the HLS colour mask**. The colour mask has the biggest effect: it adds about 6 points of accuracy at 20 px and about 7–9 points at 10 px, and it brings detection of both lanes to 100%. The stricter Canny thresholds help only slightly once the mask is on.
+The best setting is **Canny (80, 200) with the HLS colour mask**. The colour mask has the biggest effect: it adds about 6 points of accuracy at 20 px and about 7–9 points at 10 px, and it brings detection of both lanes to 100%. The stricter Canny thresholds help only slightly once the mask is on. This setting is now the default in `src/lane.py`, and `demo.gif` and `challenge.gif` were generated with it.
+
+**Full videos (no labels, detection only).** Percentage of frames in which both lanes were found by `detect()` alone, without smoothing:
+
+| Video | Canny (50, 150), no mask | Canny (80, 200) + mask |
+|---|---|---|
+| `project_video.mp4` | 99.4% (1252/1260) | 100.0% (1260/1260) |
+| `challenge_video.mp4` | 95.9% (464/484) | 96.1% (465/484) |
+
+The colour mask fixes the main video, but it barely changes the result on the challenge video.
 
 Sample output frame (`project_video.mp4`, frame 1000):
 
@@ -81,11 +91,11 @@ Edge map after Canny + ROI (first frame): [results/step_edges.jpg](results/step_
 ## Limitations
 
 - **Straight-line model only.** Curved lanes are approximated by one straight line. The ground truth is also a straight line through two clicks, so the metric does not penalise curvature errors.
-- **Light-coloured road surfaces and seams.** On pale concrete, the left line can drift inside the yellow line (`results/demo_frame0600.jpg`). On `challenge_video.mp4`, tar seams and the barrier edge pull the fitted lines away from the real lane markings (`results/challenge_frame0200.jpg`).
+- **Harder roads.** On `challenge_video.mp4`, one lane side is still missed in 19 of 484 frames (3.9%) with the best setting. The colour mask helps little there, because the faded markings, tar seams and concrete barrier are not cleanly separated by fixed white/yellow thresholds. The overlay is held by temporal smoothing in those frames, and there are no labels for this video, so its accuracy is not measured.
 - **Hand-tuned constants.** The ROI, Hough parameters, slope cutoff and colour thresholds are fixed for this camera and do not adapt to lighting or mounting.
 - **Small evaluation set.** 40 frames from a single video, labeled by one person.
 - **No camera calibration or perspective transform.** The offset is a fraction of lane width, not metres.
 
 ## Conclusion
 
-A simple Canny + Hough pipeline with an HLS white/yellow mask finds both lane lines in all 40 test frames. 94.1% of points are within 20 px of the hand labels, and the mean error is 7.5 px. That is enough to drive a working lane-departure warning on the main highway video. The approach breaks down on lane curvature and on roads with strong seams and changing surfaces, as in the challenge video. A perspective transform with polynomial fitting, or a learned detector, would be the next step.
+A simple Canny + Hough pipeline with an HLS white/yellow mask finds both lane lines in all 40 test frames and in every frame of the main video. 94.1% of points are within 20 px of the hand labels, and the mean error is 7.5 px. That is enough to drive a working lane-departure warning on the main highway video. The approach is weaker on curved lanes and on roads with seams and changing surfaces: on the challenge video it still misses a side in 3.9% of frames. A perspective transform with polynomial fitting, or a learned detector, would be the next step.

@@ -6,7 +6,7 @@ the bottom of the image. A point is "correct" if |pred - gt| < px pixels.
 If a side is not detected, its 10 points all count as wrong.
 
 Example:
-    python src/evaluate.py --canny_lo 80 --canny_hi 200 --px 10 --color
+    python src/evaluate.py --canny_lo 50 --canny_hi 150 --px 10 --no-color
 Each run appends a block to results/metrics.txt.
 """
 import argparse
@@ -32,10 +32,11 @@ def gt_x(points, ys):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--canny_lo", type=int, default=50)
-    p.add_argument("--canny_hi", type=int, default=150)
+    p.add_argument("--canny_lo", type=int, default=lane.CANNY_LO)
+    p.add_argument("--canny_hi", type=int, default=lane.CANNY_HI)
     p.add_argument("--px", type=float, default=20, help="pixel tolerance for a correct point")
-    p.add_argument("--color", action="store_true", help="HLS white/yellow mask before Canny")
+    p.add_argument("--color", action=argparse.BooleanOptionalAction, default=lane.USE_COLOR,
+                   help="HLS white/yellow mask before Canny (--no-color to disable)")
     p.add_argument("--out", default=str(ROOT / "results/metrics.txt"))
     args = p.parse_args()
 

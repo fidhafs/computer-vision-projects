@@ -55,7 +55,8 @@ def main():
     p.add_argument("--edges", default=str(RESULTS / "step_edges.jpg"),
                    help="where to save the Canny+ROI image of the first frame")
     p.add_argument("--sample_every", type=int, default=200)
-    p.add_argument("--color", action="store_true", help="HLS white/yellow mask before Canny")
+    p.add_argument("--color", action=argparse.BooleanOptionalAction, default=lane.USE_COLOR,
+                   help="HLS white/yellow mask before Canny (--no-color to disable)")
     args = p.parse_args()
     lane.USE_COLOR = args.color
 

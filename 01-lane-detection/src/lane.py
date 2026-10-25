@@ -15,10 +15,10 @@ import numpy as np
 
 # ---- Tunable parameters ---------------------------------------------------
 Y_TOP = 0.62            # top of the trapezoid ROI, as a fraction of image height
-CANNY_LO, CANNY_HI = 50, 150
+CANNY_LO, CANNY_HI = 80, 200   # best of the evaluated settings (see README)
 MIN_SLOPE = 0.4         # ignore near-horizontal segments (|dy/dx| below this)
 WARN_THRESHOLD = 0.15   # |offset| above this (fraction of lane width) -> warning
-USE_COLOR = False       # if True, keep only white/yellow pixels (HLS) before Canny
+USE_COLOR = True        # if True, keep only white/yellow pixels (HLS) before Canny
 
 
 def color_mask(frame):

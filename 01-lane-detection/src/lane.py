@@ -1,6 +1,7 @@
 """Classical lane detection pipeline (no deep learning).
 
-Steps: grayscale -> Gaussian blur -> Canny edges -> trapezoid region of interest
+Steps: HLS white/yellow colour mask (on by default, USE_COLOR) -> grayscale
+-> Gaussian blur -> Canny edges -> trapezoid region of interest
 -> probabilistic Hough transform -> split segments into left/right by slope
 -> fit one straight line per side as x = a*y + b.
 

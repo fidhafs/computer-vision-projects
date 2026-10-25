@@ -1,0 +1,48 @@
+[canny=(50,150) px=20 color=off]
+frames:               40
+both lanes detected:  97.5%
+point accuracy:       88.4%  (707/800 points within 20px)
+mean pixel error:     9.1 px (detected sides only)
+
+[canny=(50,150) px=20 color=on]
+frames:               40
+both lanes detected:  100.0%
+point accuracy:       93.6%  (749/800 points within 20px)
+mean pixel error:     7.6 px (detected sides only)
+
+[canny=(50,150) px=10 color=off]
+frames:               40
+both lanes detected:  97.5%
+point accuracy:       69.0%  (552/800 points within 10px)
+mean pixel error:     9.1 px (detected sides only)
+
+[canny=(50,150) px=10 color=on]
+frames:               40
+both lanes detected:  100.0%
+point accuracy:       77.8%  (622/800 points within 10px)
+mean pixel error:     7.6 px (detected sides only)
+
+[canny=(80,200) px=20 color=off]
+frames:               40
+both lanes detected:  95.0%
+point accuracy:       87.6%  (701/800 points within 20px)
+mean pixel error:     8.9 px (detected sides only)
+
+[canny=(80,200) px=20 color=on]
+frames:               40
+both lanes detected:  100.0%
+point accuracy:       94.1%  (753/800 points within 20px)
+mean pixel error:     7.5 px (detected sides only)
+
+[canny=(80,200) px=10 color=off]
+frames:               40
+both lanes detected:  95.0%
+point accuracy:       72.0%  (576/800 points within 10px)
+mean pixel error:     8.9 px (detected sides only)
+
+[canny=(80,200) px=10 color=on]
+frames:               40
+both lanes detected:  100.0%
+point accuracy:       78.9%  (631/800 points within 10px)
+mean pixel error:     7.5 px (detected sides only)
+

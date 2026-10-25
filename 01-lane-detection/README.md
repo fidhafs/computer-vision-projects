@@ -4,7 +4,7 @@
 
 ## Problem Statement
 
-A driver-assistance system needs to know where the lane is and whether the car is drifting out of it. I wanted to see how far I could get with just one front-facing dashcam and classical computer vision. No deep learning, no training data.
+A driver-assistance system needs to know where the lane is and whether the car is drifting out of it. This project aims tosee how far I could get with just one front-facing dashcam and classical computer vision. No deep learning, no training data.
 
 ## Objective
 

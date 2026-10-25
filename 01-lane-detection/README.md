@@ -88,11 +88,6 @@ Sample output frame (`project_video.mp4`, frame 1000):
 
 Edge map after Canny + ROI (first frame): [results/step_edges.jpg](results/step_edges.jpg). Output on the challenge video: [results/challenge.gif](results/challenge.gif).
 
-## Problems I ran into
-
-1. I first planned to use TuSimple, but the dataset was 21.6 GB. I switched to the Udacity videos instead.
-2. My first set of labels was wrong. The labelling window had been resized on WSL, and the clicks were saved at the edges of the image instead of on the lanes. I caught it by drawing the labels back on a frame. I changed the window to `WINDOW_AUTOSIZE` and relabelled all 40 frames.
-
 ## Limitations
 
 - Straight-line model only. A curved lane gets one straight line. My ground truth is also a straight line through two clicks, so the metric can't catch curve errors.

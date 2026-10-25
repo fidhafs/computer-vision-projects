@@ -12,10 +12,8 @@ This is the public repository for Udacity's Self-Driving Car Nanodegree "Advance
 |---|---|
 | `project_video.mp4` | Main test video: highway driving in daylight, 1280×720. Used for the demo and for the labeled frames. |
 | `challenge_video.mp4` | Harder video with tar seams, a concrete barrier and changing road surface. Used for `results/challenge.gif`. |
-| `harder_challenge_video.mp4` | Winding road with sharp curves and strong shadows. Not used in this project. |
-| `test_images/` | Still frames from the videos. |
-| `camera_cal/` | Chessboard images for camera calibration. Not used, because this pipeline does no calibration. |
-| `examples/`, `output_images/`, `writeup_template.md`, `example_writeup.pdf` | Udacity course material. |
+
+The repository also contains a harder winding-road video, camera-calibration chessboard images, still test images and Udacity course material; none of these are used in this project.
 
 ## Getting the data
 

@@ -2,11 +2,11 @@
 
 ## 1. Introduction
 
-Lane-departure warning is one of the simplest driver-assistance features. The system finds the lane lines, works out where the car sits between them, and warns the driver when it drifts. This project builds such a system from a single dashcam using only classical image processing (edges, the Hough transform and least-squares fitting). It then measures how well this works against hand-labeled ground truth.
+Lane-departure warning is one of the simplest driver-assistance features. The system finds the lane lines, works out where the car sits between them, and warns the driver when it drifts. I built one from a single dashcam using only classical image processing: edges, the Hough transform and least-squares fitting. Then I measured how well it works against frames I labeled by hand.
 
 ## 2. Dataset
 
-The videos come from the Udacity CarND-Advanced-Lane-Lines repository [1]: `project_video.mp4` (daylight highway) and `challenge_video.mp4` (seams, barrier, varied surface), both 1280×720. Forty evenly spaced frames of `project_video.mp4` were hand-labeled by clicking two points on each lane line. That gives 40 frames × 2 sides × 10 evaluation rows = 800 test points.
+I used two videos from the Udacity CarND-Advanced-Lane-Lines repository [1], both 1280×720. `project_video.mp4` is daylight highway driving. `challenge_video.mp4` has seams, a barrier and a changing road surface. I hand-labeled 40 evenly spaced frames of `project_video.mp4` by clicking two points on each lane line. That gives 40 frames × 2 sides × 10 evaluation rows = 800 test points.
 
 ## 3. Method
 
@@ -19,13 +19,13 @@ Each frame goes through these steps:
 5. Segments are split into left and right by the sign of their slope. Near-horizontal segments (|slope| < 0.4) are dropped.
 6. One line per side is fitted by least squares as x = a·y + b.
 
-The final pipeline uses the HLS mask and Canny (80, 200) by default, chosen from the experiments below. The departure offset is (image centre − lane centre) / lane width at the bottom row, and |offset| > 0.15 triggers a warning. In video, line coefficients are smoothed with an exponential moving average (α = 0.3).
+Based on the experiments below, I made the HLS mask and Canny (80, 200) the defaults. The departure offset is (image centre − lane centre) / lane width at the bottom row. If |offset| > 0.15, the system shows a warning. In video, I smooth the line coefficients with an exponential moving average (α = 0.3).
 
-For evaluation, predicted and labeled x positions are compared on 10 rows. A point is correct if it lies within a pixel tolerance (20 or 10 px). A missed side counts all 10 of its points as wrong.
+To evaluate, I compare predicted and labeled x positions on 10 rows. A point is correct if it is within a pixel tolerance (20 or 10 px). If a side is missed, all 10 of its points count as wrong.
 
 ## 4. Experiments & Results
 
-Two Canny threshold pairs, with the colour mask on and off, at two tolerances:
+I tried two Canny threshold pairs, with the colour mask on and off, at two tolerances:
 
 | Canny | HLS mask | Both detected | Acc @ 20 px | Acc @ 10 px | Mean error |
 |---|---|---|---|---|---|
@@ -34,24 +34,24 @@ Two Canny threshold pairs, with the colour mask on and off, at two tolerances:
 | (80, 200) | off | 95.0% | 87.6% | 72.0% | 8.9 px |
 | (80, 200) | on  | 100.0% | **94.1%** | **78.9%** | **7.5 px** |
 
-The colour mask is the main improvement. It adds 5.2–6.5 points of accuracy at 20 px and 6.9–8.8 points at 10 px, and it removes every missed lane. Stricter Canny thresholds (80, 200) help a little at 10 px. Without the mask, though, they miss more lanes (95.0% both detected versus 97.5%), because faint markings no longer produce edges. Tightening the tolerance from 20 px to 10 px cuts accuracy by 15–19 points, so most of the remaining error is in the 10–20 px range.
+The colour mask gave the biggest improvement. It adds 5.2–6.5 points of accuracy at 20 px and 6.9–8.8 points at 10 px. With it on, no lanes are missed. Stricter Canny thresholds (80, 200) help a little at 10 px. Without the mask, though, they miss more lanes (95.0% both detected versus 97.5%), because faint markings stop producing edges. Going from 20 px to 10 px tolerance cuts accuracy by 15–19 points, so most of the remaining error is between 10 and 20 px.
 
-On the full videos, measured without labels as the share of frames with both sides detected, the best setting reaches 100.0% on `project_video.mp4` (baseline 99.4%). On `challenge_video.mp4` it reaches 96.1% (baseline 95.9%).
+I also checked the full videos. There are no labels for them, so I only measured how often both sides were detected. The best setting reaches 100.0% on `project_video.mp4` (baseline 99.4%) and 96.1% on `challenge_video.mp4` (baseline 95.9%).
 
 ## 5. Discussion
 
-- **Curves.** The model is a straight line, so on bends the fitted line follows the near part of the lane and drifts off it further ahead. The ground truth is also a straight line, so this error is not captured by the numbers above.
-- **Shadows and surface changes.** Shadow edges and the borders of pale concrete patches are strong grayscale gradients, which Canny and Hough can mistake for lane segments. The colour mask removes most of these because they are neither white nor yellow, which is consistent with the 100% detection rate when the mask is on. With the baseline settings, the left line sat inside the yellow marking on pale concrete (demo frame 600). With the mask on, it follows the marking.
-- **Challenge video.** Tar seams that run parallel to the lane, and the base of the concrete barrier, are long, straight and high-contrast. Inside the ROI they look like lane lines to Hough. With the baseline settings, the right line locked onto a seam (challenge frame 200). The colour mask removes much of this, but a side is still missed in 19 of 484 frames (3.9%), almost the same as without the mask (20 frames). Fixed colour thresholds are not enough for faded markings. The EMA smoothing holds the previous line through misses, but it cannot correct a line that is wrong.
+- **Curves.** The model is a straight line. On bends, the fitted line follows the near part of the lane and drifts off it further ahead. My ground truth is also a straight line, so the numbers above don't capture this error.
+- **Shadows and surface changes.** Shadow edges and the borders of pale concrete patches are strong grayscale gradients, and Canny and Hough can mistake them for lane segments. The colour mask removes most of them, since they are neither white nor yellow. That fits with the 100% detection rate when the mask is on. With the baseline settings, the left line sat inside the yellow marking on pale concrete (demo frame 600). With the mask on, it follows the marking.
+- **Challenge video.** Tar seams running alongside the lane, and the base of the concrete barrier, are long, straight and high-contrast. Inside the ROI, Hough sees them as lane lines. With the baseline settings, the right line locked onto a seam (challenge frame 200). The colour mask removes much of this, but a side is still missed in 19 of 484 frames (3.9%). Without the mask it was 20 frames, so almost the same. Fixed colour thresholds aren't enough for faded markings. The EMA smoothing holds the previous line through a miss, but it can't fix a line that is wrong.
 
 ## 6. Conclusion & Future Work
 
-Using Canny (80, 200) with the HLS mask, the pipeline found both lanes in every test frame with a mean error of 7.5 px. That is enough to drive a working departure warning on clean highway footage. Next steps:
+With Canny (80, 200) and the HLS mask, my pipeline found both lanes in every test frame, with a mean error of 7.5 px. That's enough for a working departure warning on clean highway footage. Next, I would like to try:
 
-- Camera calibration and a bird's-eye perspective transform with second-order polynomial fits, to handle curves and give an offset in metres.
-- Rejecting outlier segments by expected lane width and by consistency with the previous frame.
+- Camera calibration and a bird's-eye perspective transform with second-order polynomial fits, to handle curves and give the offset in metres.
+- Rejecting outlier segments using the expected lane width and the previous frame.
 - A larger labeled set that includes the challenge videos.
-- Comparison with a learned lane detector.
+- Comparing against a learned lane detector.
 
 ## References
 
